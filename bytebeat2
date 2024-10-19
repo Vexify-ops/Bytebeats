@@ -1,0 +1,25 @@
+#include <windows.h>
+#pragma comment(lib, "winmm.lib")
+
+DWORD WINAPI sound1() {
+	HWAVEOUT hwo = 0;
+	WAVEFORMATEX wfx = { WAVE_FORMAT_PCM, 1, 8000, 8000, 1, 8, 0 };
+	waveOutOpen(&hwo, WAVE_MAPPER, &wfx, 0, 0, CALLBACK_NULL);
+
+	char buffer[8000 * 30];
+
+	for (DWORD t = 0; t < sizeof(buffer); t++)
+		buffer[t] = static_cast<char>(t >> 6 ^ t & 37 | t << 1 & (t & 598 ? t >> 4 : t >> 10));
+
+	WAVEHDR hdr = { buffer, sizeof(buffer), 0, 0, 0, 0, 0, 0 };
+	waveOutPrepareHeader(hwo, &hdr, sizeof(WAVEHDR));
+	waveOutWrite(hwo, &hdr, sizeof(WAVEHDR));
+	waveOutUnprepareHeader(hwo, &hdr, sizeof(WAVEHDR));
+	waveOutClose(hwo);
+	return 0;
+}
+
+int main(HINSTANCE a, HINSTANCE b, LPSTR c, int d) {
+	sound1();
+	Sleep(100000);
+}
